@@ -45,7 +45,11 @@ async function ollamaChat(opts: { model: string; messages: any[]; format?: any; 
   const res = await fetch(`${OLLAMA_BASE}/api/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...opts, stream: false }),
+    body: JSON.stringify({ 
+      ...opts, 
+      stream: false,
+      keep_alive: -1
+    }),
   });
   const data: any = await res.json();
   return { content: data?.message?.content ?? "" };
