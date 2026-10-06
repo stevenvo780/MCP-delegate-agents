@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import * as fs from "fs/promises";
 import * as path from "path";
+import { readFiles, writeFile } from "./file-access.js";
 
 const log = (...args: any[]) => console.error("[delegator]", ...args);
 const OLLAMA_BASE = "http://127.0.0.1:11434";
@@ -26,30 +27,6 @@ async function getDirTree(dir: string, depth = 0, maxDepth = 2): Promise<string>
     }
   } catch (e) { return ""; } 
   return lines.join("\n");
-}
-
-async function readFiles(root: string, filePaths: string[]): Promise<string> {
-  let context = "";
-  for (const p of filePaths) {
-    try {
-      const fullPath = path.resolve(root, p);
-      const content = await fs.readFile(fullPath, "utf-8");
-      context += `\n--- FILE: ${p} ---\n${content}\n`;
-    } catch (e) {}
-  }
-  return context;
-}
-
-async function writeFile(root: string, relPath: string, content: string): Promise<string> {
-  try {
-    const fullPath = path.resolve(root, relPath);
-    if (!fullPath.startsWith(path.resolve(root))) return `Error: Access denied to ${relPath}`;
-    await fs.mkdir(path.dirname(fullPath), { recursive: true });
-    await fs.writeFile(fullPath, content, "utf-8");
-    return `Successfully wrote: ${relPath}`;
-  } catch (e: any) {
-    return `Error writing ${relPath}: ${e.message}`;
-  }
 }
 
 function parseFileBlocks(text: string): Array<{ path: string, content: string }> {
